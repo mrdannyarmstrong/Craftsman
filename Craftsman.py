@@ -301,6 +301,14 @@ class KP2:
         self.root.config(menu=menubar)
 
     def new_canvas(self):
+        if (self.saved == 0):
+            response = messagebox.askyesno("Save", "Do you want to save?")
+            if response:
+                self.normalsave_canvas()
+            else:
+                dummyvalue = 69
+        else:
+                dummyvalue = 69
         self.image = Image.new("RGBA", (self.image_width, self.image_height), "white")
         self.draw = ImageDraw.Draw(self.image)
         self.update_canvas_image()
@@ -310,6 +318,14 @@ class KP2:
         self.curpath = "NULL"
 
     def open_canvas(self):
+        if (self.saved == 0):
+            response = messagebox.askyesno("Save", "Do you want to save?")
+            if response:
+                self.normalsave_canvas()
+            else:
+                dummyvalue = 69
+        else:
+                dummyvalue = 69
         path = filedialog.askopenfilename(filetypes=[("Portable Network Graphics", "*.png;*")])
         if not path:
             return
