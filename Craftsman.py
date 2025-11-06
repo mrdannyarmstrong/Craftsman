@@ -296,7 +296,7 @@ class KP2:
         menubar.add_cascade(label="File", menu=file_menu)
         help_menu = tk.Menu(menubar, tearoff=0, bg="#ece9d8")
         help_menu.add_command(label="About", command=lambda: messagebox.showinfo(
-            "About", "Craftsman Beta\nVersion: 0.8.0\nCreated by: Daniel Armstrong"))
+            "About", "Craftsman Beta\nVersion: 0.8.1\nCreated by: Daniel Armstrong"))
         menubar.add_cascade(label="Help", menu=help_menu)
         self.root.config(menu=menubar)
 
