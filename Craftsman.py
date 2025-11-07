@@ -178,7 +178,6 @@ class KP2:
         # Create a frame for brush sizes below tools
         brush_frame = tk.Frame(self.sidebar, bg="#ece9d8")
         brush_frame.pack(side=tk.TOP, fill=tk.X, pady=(10, 0))
-
         tk.Label(brush_frame, text="Brush Size:", bg="#ece9d8").pack(pady=(0, 3))
 
         for name, size in [("small", 1), ("medium", 5), ("large", 10)]:
@@ -199,8 +198,21 @@ class KP2:
         self.eraser_frame = tk.Frame(self.bottom_panel, bg="#ece9d8")
 
         # Basic Eraser button (can expand if needed)
-        tk.Button(self.eraser_frame, text="Basic Eraser",
-                  command=lambda: self.set_brush_size(10), bg="#ece9d8").pack(padx=5, pady=5)
+        eraser_icon = self.icons.get("eraser")
+        if eraser_icon:
+            tk.Button(
+                self.eraser_frame,
+                image=eraser_icon,
+                command=lambda: self.set_brush_size(10),
+                bg="#ece9d8"
+            ).pack(padx=5, pady=5)
+        else:
+            tk.Button(
+                self.eraser_frame,
+                text="Basic Eraser",
+                command=lambda: self.set_brush_size(10),
+                bg="#ece9d8"
+            ).pack(padx=5, pady=5)
 
         self.stamps_frame = tk.Frame(self.bottom_panel, bg="#ece9d8")
 
@@ -296,19 +308,19 @@ class KP2:
         menubar.add_cascade(label="File", menu=file_menu)
         help_menu = tk.Menu(menubar, tearoff=0, bg="#ece9d8")
         help_menu.add_command(label="About", command=lambda: messagebox.showinfo(
-            "About", "Craftsman Beta\nVersion: 0.8.1\nCreated by: Daniel Armstrong"))
+            "About", "Craftsman Beta\nVersion: 0.8.2\nCreated by: Daniel Armstrong\n(C)2025 Daniel Armstrong"))
         menubar.add_cascade(label="Help", menu=help_menu)
         self.root.config(menu=menubar)
 
     def new_canvas(self):
         if (self.saved == 0):
-            response = messagebox.askyesno("Save", "Do you want to save?")
-            if response:
+            response = messagebox.askyesnocancel("Save", "Do you want to save?")
+            if response is True:  # Yes
                 self.normalsave_canvas()
-            else:
+            elif response is False:  # No
                 dummyvalue = 69
-        else:
-                dummyvalue = 69
+            elif response is None:  # Cancel
+                return  # or whatever you want to do for cancel
         self.image = Image.new("RGBA", (self.image_width, self.image_height), "white")
         self.draw = ImageDraw.Draw(self.image)
         self.update_canvas_image()
@@ -316,22 +328,24 @@ class KP2:
         self.redo_stack.clear()
         self.save_undo()
         self.curpath = "NULL"
-
+        self.saved = 1
+        
     def open_canvas(self):
         if (self.saved == 0):
-            response = messagebox.askyesno("Save", "Do you want to save?")
-            if response:
+            response = messagebox.askyesnocancel("Save", "Do you want to save?")
+            if response is True:  # Yes
                 self.normalsave_canvas()
-            else:
+            elif response is False:  # No
                 dummyvalue = 69
-        else:
-                dummyvalue = 69
+            elif response is None:  # Cancel
+                return  # or whatever you want to do for cancel
         path = filedialog.askopenfilename(filetypes=[("Portable Network Graphics", "*.png;*")])
         if not path:
             return
         try:
             img = Image.open(path).convert("RGBA")
             self.curpath = path
+            self.saved = 1
         except Exception as e:
             messagebox.showerror("Open Error", f"Cannot open image:\n{e}")
             return
@@ -561,11 +575,13 @@ class KP2:
     def on_close(self):
         try:
             if (self.saved == 0):
-                response = messagebox.askyesno("Save", "Do you want to save?")
-                if response:
-                    self.normalsave_canvas()
-                else:
-                    dummyvalue = 69
+                response = messagebox.askyesnocancel("Save", "Do you want to save?")
+            if response is True:  # Yes
+                self.normalsave_canvas()
+            elif response is False:  # No
+                dummyvalue = 69
+            elif response is None:  # Cancel
+                return  # or whatever you want to do for cancel
             else:
                 dummyvalue = 69
         except:
