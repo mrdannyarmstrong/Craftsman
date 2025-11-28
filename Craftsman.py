@@ -7,6 +7,7 @@ import random
 from collections import deque
 import shutil
 import math
+import vlc
 
 class KP2:
     def __init__(self, root):
@@ -77,6 +78,14 @@ class KP2:
         self.update_bottom_panel()
         self.save_undo()
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
+
+        # VLC player instance
+        self.instance = vlc.Instance()
+        self.player = self.instance.media_player_new()
+        self.root.protocol("WM_DELETE_WINDOW", self.on_close)
+        self.loop = True
+        self.is_playing = False
+        self.updating_slider = False  # Flag to avoid conflict during slider update
 
     def load_gui_icons(self):
         self.icons = {}
@@ -308,7 +317,7 @@ class KP2:
         menubar.add_cascade(label="File", menu=file_menu)
         help_menu = tk.Menu(menubar, tearoff=0, bg="#ece9d8")
         help_menu.add_command(label="About", command=lambda: messagebox.showinfo(
-            "About", "Craftsman Beta\nVersion: 0.8.2\nCreated by: Daniel Armstrong\n(C)2025 Daniel Armstrong"))
+            "About", "Craftsman Beta\nVersion: 0.9.0\nCreated by: Daniel Armstrong\n(C)2025 Daniel Armstrong"))
         menubar.add_cascade(label="Help", menu=help_menu)
         self.root.config(menu=menubar)
 
@@ -339,7 +348,7 @@ class KP2:
                 dummyvalue = 69
             elif response is None:  # Cancel
                 return  # or whatever you want to do for cancel
-        path = filedialog.askopenfilename(filetypes=[("Portable Network Graphics", "*.png;*")])
+        path = filedialog.askopenfilename(filetypes=[("Portable Network Graphics", "*.png")])
         if not path:
             return
         try:
@@ -413,10 +422,18 @@ class KP2:
         self.start_x, self.start_y = event.x, event.y
         if self.current_tool == "paintbucket":
             self.paint_bucket(event.x, event.y)
+            self.apply_stamp(event.x, event.y)
+            player = vlc.MediaPlayer("audio/paintbucket.wav")
+            player.play()
         elif self.current_tool == "text":
             self.insert_text(event.x, event.y)
+            self.apply_stamp(event.x, event.y)
+            player = vlc.MediaPlayer("audio/text.wav")
+            player.play()
         elif self.current_tool == "stamps" and self.current_stamp:
             self.apply_stamp(event.x, event.y)
+            player = vlc.MediaPlayer("audio/stamp.wav")
+            player.play()
             self.save_undo()
         elif self.current_tool == "eraser":
             self.erase(event.x, event.y)
@@ -424,9 +441,17 @@ class KP2:
         elif self.current_tool == "pen":
             self.draw.line([(self.last_x, self.last_y), (event.x, event.y)], fill=self.current_color, width=self.brush_size)
             self.update_canvas_image()
+            player = vlc.MediaPlayer("audio/pen.wav")
+            player.play()
+            player.get_media().add_option("input-repeat=-1")
         elif self.current_tool == "spray":
             self.spray(event.x, event.y)
             self.update_canvas_image()
+            player = vlc.MediaPlayer("audio/spray.wav")
+            player.play()
+            player.get_media().add_option("input-repeat=-1")
+            
+
 
     def on_paint(self, event):
         if self.current_tool == "pen":
@@ -479,6 +504,8 @@ class KP2:
             self.draw.rectangle([x1, y1, x2, y2], outline=self.current_color, width=self.brush_size)
         elif self.current_tool == "circle":
             self.draw.ellipse([x1, y1, x2, y2], outline=self.current_color, width=self.brush_size)
+        self.player = vlc.MediaPlayer("audio/shape.wav")
+        self.player.play()
 
     def spray(self, x, y):
         for _ in range(self.brush_size * 10):
