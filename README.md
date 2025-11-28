@@ -13,3 +13,4 @@ A painting app made in python
 * collections
 * shutil
 * math
+* vlc
